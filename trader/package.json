@@ -1,0 +1,32 @@
+{
+  "name": "trader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist",
+  "scripts": {
+    "lint": "eslint src",
+    "build": "rimraf dist && babel src -d dist",
+    "start": "dist/app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-eslint": "^8.2.2",
+    "babel-plugin-module-resolver": "^3.1.0",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "eslint": "^4.19.0",
+    "eslint-config-prettier": "^2.9.0",
+    "prettier": "^1.11.1",
+    "rimraf": "^2.6.2"
+  },
+  "dependencies": {
+    "commander": "^2.15.0",
+    "dotenv": "^5.0.1",
+    "lodash": "^4.17.5",
+    "node-binance-api": "^0.4.23"
+  }
+}
