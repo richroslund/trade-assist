@@ -3,11 +3,15 @@
 /**
  * Module dependencies.
  */
-
+require('es6-symbol/implement');
+require('babel-polyfill');
 var program = require('commander');
-var {getPrice, getBalance} = require('./dist/trader');
+var {getPrice, getBalance, trades, getAllSymbols, stats} = require('./dist/trader');
 var _ = require('lodash');
 
+let setupCommand = (cmdTxt, action) => {
+  program.command(cmdTxt).action((...args) => action(...args));
+}
 
 program
   .command('price <ticker>')
@@ -21,5 +25,23 @@ program
     getBalance(crypto).then((res) => console.log(res));
 
   });
+
+program
+  .command('trades <ticker>')
+  .action(function (ticker) {
+    getAllSymbols(ticker)
+      .then((tickers) => {
+        trades(tickers, (trades) => {
+          let {e:eventType, E:eventTime, s:symbol, p:price, q:quantity, m:maker, a:tradeId} = trades;
+          console.log(symbol+' trade update. price: '+price+', quantity: '+quantity+', maker: '+maker);
+        });
+      });
+    
+
+  });
+
+
+setupCommand('stats <ticker> <interval>',(ticker, interval) => stats(ticker, interval));
+
 
 program.parse(process.argv)

@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getBalance = exports.getPrice = exports.client = undefined;
+exports.stats = exports.trades = exports.getBalance = exports.getPrice = exports.getAllSymbols = exports.client = undefined;
 
 var _lodash = require('lodash');
 
@@ -11,6 +11,7 @@ var _lodash2 = _interopRequireDefault(_lodash);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+require('es6-symbol/implement');
 var binance = require('node-binance-api');
 
 require('dotenv').config();
@@ -27,9 +28,24 @@ var client = exports.client = function client() {
 
 var balance = function balance() {
   return new Promise(function (res, rej) {
-    console.log('balance');
     client().balance(function (err, balances) {
       if (err) return rej(err);else return res(balances);
+    });
+  });
+};
+
+var getAllSymbols = exports.getAllSymbols = function getAllSymbols(match) {
+  return new Promise(function (res, rej) {
+    client().prices(function (err, prices) {
+      if (err) rej(err);else {
+        var results = (0, _lodash2.default)(prices).map(function (v, k) {
+          return k;
+        });
+        if (_lodash2.default.isString(match)) results = results.filter(function (k) {
+          return _lodash2.default.startsWith(_lodash2.default.toLower(k), _lodash2.default.toLower(match));
+        });
+        res(results.value());
+      }
     });
   });
 };
@@ -65,5 +81,39 @@ var getBalance = exports.getBalance = function getBalance(coin) {
       if (parseInt(val.available) + parseInt(val.onOrder) > 0) res[key] = val;
       return res;
     }, {});
+  });
+};
+
+var trades = exports.trades = function trades(tickers, tickerCallback) {
+  client().websockets.trades(tickers, function (tradez) {
+    tickerCallback(tradez);
+  });
+};
+
+var stats = exports.stats = function stats(ticker, interval) {
+  client().websockets.candlesticks(ticker, interval, function (candlesticks) {
+    var eventType = candlesticks.e,
+        eventTime = candlesticks.E,
+        symbol = candlesticks.s,
+        ticks = candlesticks.k;
+    var open = ticks.o,
+        high = ticks.h,
+        low = ticks.l,
+        close = ticks.c,
+        volume = ticks.v,
+        trades = ticks.n,
+        interval = ticks.i,
+        isFinal = ticks.x,
+        quoteVolume = ticks.q,
+        buyVolume = ticks.V,
+        quoteBuyVolume = ticks.Q;
+
+    console.log(symbol + " " + interval + " candlestick update");
+    console.log("open: " + open);
+    console.log("high: " + high);
+    console.log("low: " + low);
+    console.log("close: " + close);
+    console.log("volume: " + volume);
+    console.log("isFinal: " + isFinal);
   });
 };
