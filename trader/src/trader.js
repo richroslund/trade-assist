@@ -12,15 +12,41 @@ export const client = () => {
   return binance;
 }
 
+const balance = () => new Promise((res, rej)=> {
+  client().balance((err, balances) => {
+    if(err)
+      return rej(err);
+    else
+      return res(balances);
+  });
+});
+
 export const getPrice = (coin) => {
-  let id = _.upperCase(coin)+'USDT';
+  let id = _.upperCase(coin);
   return new Promise(function(resolve, reject) {
-    client().prices(id, (error, ticker) => {
+    client().prices((error, ticker) => {
       if (error) {
         reject(error);
       } else {
-        resolve(ticker);
+        let tickerPrices = _.reduce(ticker, (res, val, key) => {
+          if(_.startsWith(key, id))
+            res[key]=val;
+          return res;
+        },{});
+        resolve(tickerPrices);
       }
     });
   });
 }
+
+export const getBalance = (coin) => balance().then((balances) =>{
+  if(_.isArray(coin))
+    return _(coin).map((c) => _.find(balances, (v,k) => k===c));
+  if(_.isString(coin))
+    return _.find(balances, (v,k) => k===coin);
+  return _.reduce(balances, (res, val, key) => {
+    if((parseInt(val.available)+parseInt(val.onOrder))>0)
+      res[key] = val;
+    return res;
+  }, {});
+});
