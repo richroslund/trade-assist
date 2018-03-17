@@ -22,7 +22,7 @@ server.listen(3030, function() {
 io.on('connection', function (socket) {
   console.log("new client connected!");
   setInterval(
-    () => getPrice("eth").then((p) => {
+    () => getPrice().then((p) => {
       console.log(p);
       socket.emit("price update", p)
     }),
